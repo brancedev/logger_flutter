@@ -240,7 +240,7 @@ class _LogConsoleState extends State<LogConsole> {
           Text(
             'Logs',
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
@@ -267,7 +267,7 @@ class _LogConsoleState extends State<LogConsole> {
             onPressed: () {
               Clipboard.setData(
                 ClipboardData(
-                  text: _bufferToString.toString(),
+                  text: _bufferToString().toString(),
                 ),
               );
             },
@@ -312,25 +312,29 @@ class _LogConsoleState extends State<LogConsole> {
                 value: Level.verbose,
               ),
               DropdownMenuItem(
-                child: Text('DEBUG'),
+                child: Text(
+                  PrettyPrinter.levelEmojis[Level.debug]! + ' DEBUG',
+                ),
                 value: Level.debug,
               ),
               DropdownMenuItem(
-                child: Text('INFO'),
+                child: Text(
+                  PrettyPrinter.levelEmojis[Level.info]! + ' INFO',
+                ),
                 value: Level.info,
               ),
               DropdownMenuItem(
-                child: Text('WARNING'),
+                child: Text(
+                  PrettyPrinter.levelEmojis[Level.warning]! + ' WARNING',
+                ),
                 value: Level.warning,
               ),
               DropdownMenuItem(
-                child: Text('ERROR'),
+                child: Text(
+                  PrettyPrinter.levelEmojis[Level.error]! + ' ERROR',
+                ),
                 value: Level.error,
               ),
-              DropdownMenuItem(
-                child: Text('WTF'),
-                value: Level.wtf,
-              )
             ],
             onChanged: (value) {
               _filterLevel = value as Level;

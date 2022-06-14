@@ -24,14 +24,13 @@ class _WrappedOutput implements LogOutput {
 }
 
 class LogConsole extends StatefulWidget {
-  final bool dark;
   final bool showCloseButton;
 
   static ListQueue<OutputEvent> _outputEventBuffer = ListQueue();
   static bool _initialized = false;
   static final _newLogs = ChangeNotifier();
 
-  LogConsole({this.dark = false, this.showCloseButton = false})
+  LogConsole({this.showCloseButton = false})
       : assert(_initialized, 'Please call LogConsole.init() first.');
 
   /// Attach this LogOutput to your logger instance:
@@ -70,7 +69,6 @@ class LogConsole extends StatefulWidget {
   static void openLogConsole(BuildContext context) async {
     var logConsole = LogConsole(
       showCloseButton: true,
-      dark: Theme.of(context).brightness == Brightness.dark,
     );
     PageRoute route;
     route = MaterialPageRoute(builder: (_) => logConsole);
@@ -163,15 +161,10 @@ class _LogConsoleState extends State<LogConsole> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: widget.dark
-          ? ThemeData(
-              brightness: Brightness.dark,
-              accentColor: Colors.blueGrey,
-            )
-          : ThemeData(
-              brightness: Brightness.light,
-              accentColor: Colors.lightBlueAccent,
-            ),
+      theme: ThemeData(
+        brightness: Brightness.dark,
+        accentColor: Colors.blueGrey,
+      ),
       home: Scaffold(
         body: SafeArea(
           child: Column(
@@ -195,7 +188,7 @@ class _LogConsoleState extends State<LogConsole> {
               clipBehavior: Clip.antiAlias,
               child: Icon(
                 Icons.arrow_downward,
-                color: widget.dark ? Colors.white : Colors.lightBlue[900],
+                color: Colors.lightBlue[900],
               ),
               onPressed: _scrollToBottom,
             ),
@@ -206,14 +199,10 @@ class _LogConsoleState extends State<LogConsole> {
   }
 
   Widget _buildLogContent() {
-    final text = StringBuffer();
-    _filteredBuffer.forEach((e) {
-      text.write(e.text);
-      text.write('\n');
-    });
+    StringBuffer text = _bufferToString();
 
     return Container(
-      color: widget.dark ? Colors.black : Colors.grey[150],
+      color: Colors.black,
       child: SingleChildScrollView(
         scrollDirection: Axis.vertical,
         controller: _scrollController,
@@ -223,7 +212,10 @@ class _LogConsoleState extends State<LogConsole> {
             width: 1600,
             child: SelectableText(
               text.toString(),
-              style: TextStyle(fontSize: _logFontSize),
+              style: TextStyle(
+                fontSize: _logFontSize,
+                color: Colors.white,
+              ),
             ),
           ),
         ),
@@ -231,17 +223,26 @@ class _LogConsoleState extends State<LogConsole> {
     );
   }
 
+  StringBuffer _bufferToString() {
+    final text = StringBuffer();
+    _filteredBuffer.forEach((e) {
+      text.write(e.text);
+      text.write('\n');
+    });
+    return text;
+  }
+
   Widget _buildTopBar() {
     return LogBar(
-      dark: widget.dark,
       child: Row(
         mainAxisSize: MainAxisSize.max,
         children: <Widget>[
           Text(
-            'Log Console',
+            'Logs',
             style: TextStyle(
-              fontSize: 20,
+              fontSize: 12,
               fontWeight: FontWeight.bold,
+              color: Colors.white,
             ),
           ),
           Spacer(),
@@ -261,6 +262,16 @@ class _LogConsoleState extends State<LogConsole> {
               });
             },
           ),
+          IconButton(
+            icon: Icon(Icons.copy_all),
+            onPressed: () {
+              Clipboard.setData(
+                ClipboardData(
+                  text: _bufferToString.toString(),
+                ),
+              );
+            },
+          ),
           if (widget.showCloseButton)
             IconButton(
               icon: Icon(Icons.close),
@@ -275,13 +286,15 @@ class _LogConsoleState extends State<LogConsole> {
 
   Widget _buildBottomBar() {
     return LogBar(
-      dark: widget.dark,
       child: Row(
         mainAxisSize: MainAxisSize.max,
         children: <Widget>[
           Expanded(
             child: TextField(
-              style: TextStyle(fontSize: 20),
+              style: TextStyle(
+                fontSize: 20,
+                color: Colors.white,
+              ),
               controller: _filterController,
               onChanged: (s) => _refreshFilter(),
               decoration: InputDecoration(
@@ -363,10 +376,9 @@ class _LogConsoleState extends State<LogConsole> {
 }
 
 class LogBar extends StatelessWidget {
-  final bool dark;
   final Widget child;
 
-  LogBar({this.dark = false, required this.child});
+  LogBar({required this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -374,16 +386,10 @@ class LogBar extends StatelessWidget {
       height: 60,
       child: Container(
         decoration: BoxDecoration(
-          boxShadow: [
-            if (!dark)
-              BoxShadow(
-                color: Colors.grey[400]!,
-                blurRadius: 3,
-              ),
-          ],
+          boxShadow: [],
         ),
         child: Material(
-          color: dark ? Colors.blueGrey[900] : Colors.white,
+          color: Colors.blueGrey[900],
           child: Padding(
             padding: EdgeInsets.fromLTRB(15, 8, 15, 8),
             child: child,
